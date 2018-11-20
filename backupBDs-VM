@@ -1,0 +1,30 @@
+#!/bin/bash
+# /home/oracle/backupBDs-VM
+# Este script faz a cópia dos backups do banco oracle (Sonner) para outro servidor (backup - VM) 
+# Rotina será chamada via cron durante a madrugada. Vide comando crontab -l
+#
+# 05/09/2018 - Thiago Pacheco Santos CPD - Prefeitura Municipal de Teófilo Otoni
+# MOTIVO - Pouco espaço livre disponível no servidor para armazenamento de backups
+#
+# 19/11/2018 - Aprimoramento do script (adicionando logs) e renomeado para backupBDs-VM (fazendo referência ao que este script faz)
+#
+BKORIGEM="/home/oracle/backup"
+BKDESTINO="/mnt/backups/backup"
+LOG="/mnt/backups/logs/`date +%Y-%m-%d`_backup.txt"
+INICIO=`date +%d/%m/%Y-%H:%M:%S`
+
+echo "Sincronização iniciada em $INICIO " >> $LOG
+
+# Efetua a cópia dos arquivos de backup 
+rsync -uahv ${BKORIGEM}/*zip ${BKDESTINO} >> $LOG
+
+# Apaga arquivos antigos (mais que 1 dia)
+find ${BKORIGEM} -mtime +0 -exec rm -rf {} +; >> $LOG
+
+# Apaga arquivos antigos (mais que 10 dias)
+find ${BKDESTINO} -mtime +10 -exec rm -rf {} +; >> $LOG
+
+FIM=`date +%d/%m/%Y-%H:%M:%S`
+echo "Sincronização finalizada em $FIM " >> $LOG
+
+exit 0
